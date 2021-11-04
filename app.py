@@ -23,13 +23,16 @@ async def get_traceback(error_id: str, original: typing.Optional[bool] = False):
     if not app.pool:
         return PlainTextResponse('Currently Unavailable. Try again later.', status_code=503)
 
-    while True:
-        try:
-            db = await app.pool.fetchrow('SELECT * FROM tracebacks WHERE error_id = $1', error_id)
-        except asyncpg.exceptions._base.InterfaceError:
-            pass
-        else:
-            break
+    try:
+        while True:
+            try:
+                db = await app.pool.fetchrow('SELECT * FROM tracebacks WHERE error_id = $1', error_id)
+            except asyncpg.exceptions._base.InterfaceError:
+                pass
+            else:
+                break
+    except:
+        return PlainTextResponse('Error ID cannot be found.', status_code=404)
 
     if not db:
         return PlainTextResponse('Error ID cannot be found.', status_code=404)
